@@ -8,6 +8,7 @@ import cv2
 import pygame
 import numpy as np
 import sys
+from threading import Timer
 
 # Initialize Pygame
 pygame.init()
@@ -83,19 +84,22 @@ def terminateFunction(Sub,terminate_button : N_button):
     msg = String()
     msg.data = "p"
     Sub.publish_message(msg)
+
     if terminate_button.color == (255,0,0):
         terminate_button.color = (125,0,0)
-    pygame.display.flip()
+    def resetColor():
+        terminate_button.color = (255,0,0)
+    Timer(0.25,resetColor).start()
 
 
 def ledFunction(Sub,Led_button : N_button):
     msg = String()
-    if Led_button.color == (0,255,0):
-        Led_button.color = (255,255,255)
-        msg.data = "ledOff"
-    else:
+    if Led_button.color == (255,255,255):
         Led_button.color = (0,255,0)
         msg.data = "ledOn"
+    else:
+        Led_button.color = (255,255,255)
+        msg.data = "ledOff"
     Sub.publish_message(msg)
 
 def main():

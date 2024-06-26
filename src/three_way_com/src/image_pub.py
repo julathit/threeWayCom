@@ -8,7 +8,7 @@ from cv_bridge import CvBridge
 def image_publisher():
     rospy.init_node('image_publisher', anonymous=True)
     pub = rospy.Publisher('camera/image', Image, queue_size=10)
-    frame_rate = 60  # 5 frames per second
+    frame_rate = 15  # 5 frames per second
 
     cap = cv2.VideoCapture(0)
     bridge = CvBridge()
