@@ -56,16 +56,53 @@ class ImageSubscriber:
         rospy.loginfo("Publishing: %s", message)
         self.publisher.publish(message)
 
-# Function to draw a button
-def draw_button(surface, text, x, y, w, h, color):
-    pygame.draw.rect(surface, color, (x, y, w, h))
-    font = pygame.font.Font(None, 36)
-    text_surface = font.render(text, True, (255, 255, 255))
-    surface.blit(text_surface, (x + (w - text_surface.get_width()) // 2, y + (h - text_surface.get_height()) // 2))
+class N_button:
+    def __init__(self,surface,text,color, textColor = (0,0,0)):
+        self.surface = surface
+        self.text = text
+        self.color = color
+        self.textColor = textColor
+        self.x, self.y = None,None
+        self.w, self.h = None,None
+    
+    def draw_button(self,x,y,w,h):
+        self.x, self.y = x,y
+        self.w, self.h = w,h
+        pygame.draw.rect(self.surface, self.color, (x, y, w, h))
+        font = pygame.font.Font(None, 36)
+        text_surface = font.render(self.text, True, self.textColor)
+        self.surface.blit(text_surface, (x + (w - text_surface.get_width()) // 2, y + (h - text_surface.get_height()) // 2))
+
+    def click_button(self,click_function):
+        mouse = pygame.mouse.get_pos()
+        if self.x <= mouse[0] <= self.x + self.w and self.y <= mouse[1] <= self.y + self.h :
+            click_function()
+
+#click function
+def terminateFunction(Sub,terminate_button : N_button):
+    msg = String()
+    msg.data = "p"
+    Sub.publish_message(msg)
+    if terminate_button.color == (255,0,0):
+        terminate_button.color = (125,0,0)
+    pygame.display.flip()
+
+
+def ledFunction(Sub,Led_button : N_button):
+    msg = String()
+    if Led_button.color == (0,255,0):
+        Led_button.color = (255,255,255)
+        msg.data = "ledOff"
+    else:
+        Led_button.color = (0,255,0)
+        msg.data = "ledOn"
+    Sub.publish_message(msg)
 
 def main():
     image_subscriber = ImageSubscriber()
     image_subscriber.subscribe()
+    terminateButton = N_button(screen,"P Terminate",(255, 0, 0))
+    ledButton = N_button(screen,"led",(255,255,255))
 
     while not rospy.is_shutdown():
         for event in pygame.event.get():
@@ -83,11 +120,13 @@ def main():
                     message.data = key_name
                     image_subscriber.publish_message(message)
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                mouse = pygame.mouse.get_pos()
-                if 50 <= mouse[0] <= 150 and height + 10 <= mouse[1] <= height + 40:
-                    msg = String()
-                    msg.data = "p"
-                    image_subscriber.publish_message(msg)
+                terminateButton.click_button(
+                    lambda: terminateFunction(image_subscriber,terminateButton)
+                )
+                ledButton.click_button(
+                    lambda: ledFunction(image_subscriber,ledButton)
+                )
+
 
 
         if image_subscriber.image1_received:
@@ -109,8 +148,11 @@ def main():
         # Draw black bars under the camera feeds
         pygame.draw.rect(screen, (128, 128, 128), (0, height, 2*width, bar_height))
 
-        # Draw the Quit button
-        draw_button(screen, "Terminate", 50, height + 10, 120, 30, (255, 0, 0))
+        terminateButton.draw_button(50, height + 10, 140, 30)
+        ledButton.draw_button(200,height + 10, 140, 30)
+
+        # # Draw the Quit button
+        # draw_button(screen, "P Terminate", 50, height + 10, 140, 30, (255, 0, 0))
 
         pygame.display.flip()
 

@@ -10,7 +10,7 @@ def image_publisher():
     pub = rospy.Publisher('camera/image2', Image, queue_size=10)
     frame_rate = 60  # 5 frames per second
 
-    cap = cv2.VideoCapture(3)
+    cap = cv2.VideoCapture(2)
     bridge = CvBridge()
 
     if not cap.isOpened():
