@@ -123,6 +123,12 @@ def main():
                     message = String()
                     message.data = key_name
                     image_subscriber.publish_message(message)
+
+                if event.key == pygame.K_SLASH:
+                    ledFunction(image_subscriber,ledButton)
+                elif event.key == pygame.K_p:
+                    terminateFunction(image_subscriber,terminateButton)
+
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 terminateButton.click_button(
                     lambda: terminateFunction(image_subscriber,terminateButton)
